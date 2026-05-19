@@ -174,25 +174,38 @@ export function Step3Review() {
                 </p>
               </div>
               {/* Diff Viewer */}
-              <div className="border rounded overflow-hidden">
+              <div className="border border-border/60 rounded-md overflow-hidden bg-card/50">
                 <ReactDiffViewer
                   oldValue={suggestion.original}
                   newValue={suggestion.suggested}
-                  splitView={true}
+                  splitView={false}
                   hideLineNumbers={true}
                   styles={{
-                    diffContainer: {
-                      tableLayout: "fixed",
-                      width: "100%",
-                    },
-                    content: {
-                      width: "50%",
+                    variables: {
+                      light: {
+                        diffViewerBackground: "transparent",
+                        diffViewerColor: "inherit",
+                        addedBackground: "rgba(34, 197, 94, 0.15)", // tailwind green-500 with opacity
+                        addedColor: "inherit",
+                        removedBackground: "rgba(239, 68, 68, 0.15)", // tailwind red-500 with opacity
+                        removedColor: "inherit",
+                        wordAddedBackground: "rgba(34, 197, 94, 0.3)",
+                        wordRemovedBackground: "rgba(239, 68, 68, 0.3)",
+                      }
                     },
                     contentText: {
                       wordBreak: "break-word",
                       overflowWrap: "break-word",
                       whiteSpace: "pre-wrap",
+                      fontFamily: "inherit",
+                      fontSize: "0.875rem",
+                      lineHeight: "1.5",
+                      padding: "8px",
                     },
+                    marker: {
+                      width: "25px",
+                      minWidth: "25px",
+                    }
                   }}
                 />
               </div>
