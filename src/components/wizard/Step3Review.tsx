@@ -185,13 +185,21 @@ export function Step3Review() {
                       light: {
                         diffViewerBackground: "transparent",
                         diffViewerColor: "inherit",
-                        addedBackground: "rgba(34, 197, 94, 0.15)", // tailwind green-500 with opacity
+                        addedBackground: "rgba(34, 197, 94, 0.15)",
                         addedColor: "inherit",
-                        removedBackground: "rgba(239, 68, 68, 0.15)", // tailwind red-500 with opacity
+                        removedBackground: "rgba(239, 68, 68, 0.15)",
                         removedColor: "inherit",
                         wordAddedBackground: "rgba(34, 197, 94, 0.3)",
                         wordRemovedBackground: "rgba(239, 68, 68, 0.3)",
                       }
+                    },
+                    diffContainer: {
+                      tableLayout: "fixed",
+                      width: "100%",
+                    },
+                    content: {
+                      width: "100%",
+                      overflow: "hidden",
                     },
                     contentText: {
                       wordBreak: "break-word",
@@ -201,6 +209,7 @@ export function Step3Review() {
                       fontSize: "0.875rem",
                       lineHeight: "1.5",
                       padding: "8px",
+                      width: "100%",
                     },
                     marker: {
                       width: "25px",
