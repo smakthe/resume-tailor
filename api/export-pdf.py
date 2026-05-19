@@ -1,7 +1,12 @@
 from http.server import BaseHTTPRequestHandler
 import json
 import base64
-import fitz # PyMuPDF
+import traceback
+
+try:
+    import pymupdf as fitz
+except ImportError:
+    import fitz
 
 def hex_to_rgb(color_int):
     r = ((color_int >> 16) & 255) / 255.0
@@ -29,8 +34,7 @@ class handler(BaseHTTPRequestHandler):
                 
             pdf_bytes = base64.b64decode(pdf_b64)
             
-            # Open PDF from bytes
-            doc = fitz.open("pdf", pdf_bytes)
+            doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             
             for page in doc:
                 text_dict = page.get_text("dict")
@@ -51,7 +55,8 @@ class handler(BaseHTTPRequestHandler):
                         
                         found_style = False
                         for block in text_dict.get("blocks", []):
-                            if block.get("type") != 0: continue
+                            if block.get("type") != 0:
+                                continue
                             for line in block.get("lines", []):
                                 for span in line.get("spans", []):
                                     span_rect = fitz.Rect(span["bbox"])
@@ -60,14 +65,14 @@ class handler(BaseHTTPRequestHandler):
                                         font_color = hex_to_rgb(span["color"])
                                         found_style = True
                                         break
-                                if found_style: break
-                            if found_style: break
+                                if found_style:
+                                    break
+                            if found_style:
+                                break
                         
-                        # Add redaction annotation and apply it
                         page.add_redact_annot(rect, fill=None)
                         page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
                         
-                        # Insert new text
                         baseline_point = fitz.Point(rect.tl.x, rect.tl.y + (font_size * 0.85))
                         page.insert_text(
                             baseline_point, 
@@ -81,7 +86,6 @@ class handler(BaseHTTPRequestHandler):
             out_bytes = doc.write(garbage=3, deflate=True)
             doc.close()
             
-            # Send successful PDF response
             self.send_response(200)
             self.send_header('Content-Type', 'application/pdf')
             self.send_header('Content-Disposition', 'attachment; filename="Tailored_Resume.pdf"')
@@ -89,7 +93,9 @@ class handler(BaseHTTPRequestHandler):
             self.wfile.write(out_bytes)
             
         except Exception as e:
-            self.send_error_response(500, str(e))
+            tb = traceback.format_exc()
+            print(f"[export-pdf] ERROR: {tb}")
+            self.send_error_response(500, f"{type(e).__name__}: {str(e)}")
             
     def send_error_response(self, code, message):
         self.send_response(code)
