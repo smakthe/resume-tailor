@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "api/export-pdf.py": {
+      "runtime": "@vercel/python@4.6.1",
+      "maxDuration": 60
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/export-pdf",
+      "destination": "/api/export-pdf"
+    }
+  ]
+}
