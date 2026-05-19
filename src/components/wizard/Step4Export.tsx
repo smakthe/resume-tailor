@@ -130,7 +130,7 @@ export function Step4Export() {
           transition={{ delay: 0.2 }}
           className="text-2xl font-bold mb-2"
         >
-          Changes Applied
+          Your Resume is Ready!
         </motion.h3>
         <motion.p 
           initial={{ opacity: 0, y: 10 }}
@@ -138,9 +138,9 @@ export function Step4Export() {
           transition={{ delay: 0.3 }}
           className="text-muted-foreground font-serif mb-8 text-center max-w-md"
         >
-          We used an advanced backend rendering engine to perfectly locate,
-          redact, and replace the text in your original PDF. Your layout,
-          design, and style remain exactly as you uploaded them.
+          Your accepted changes have been applied. The original look and
+          feel of your resume is fully preserved — download it and land
+          that interview!
         </motion.p>
 
         <motion.div

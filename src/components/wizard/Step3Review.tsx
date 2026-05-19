@@ -181,8 +181,16 @@ export function Step3Review() {
                   splitView={true}
                   hideLineNumbers={true}
                   styles={{
+                    diffContainer: {
+                      tableLayout: "fixed",
+                      width: "100%",
+                    },
+                    content: {
+                      width: "50%",
+                    },
                     contentText: {
                       wordBreak: "break-word",
+                      overflowWrap: "break-word",
                       whiteSpace: "pre-wrap",
                     },
                   }}

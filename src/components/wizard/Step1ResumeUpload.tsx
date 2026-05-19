@@ -90,8 +90,7 @@ export function Step1ResumeUpload() {
       <CardHeader>
         <CardTitle className="text-xl">Step 1: Upload Your Resume</CardTitle>
         <CardDescription className="font-serif">
-          Upload your current resume as a PDF file. We&apos;ll extract the text
-          server-side for optimal accuracy.
+          Drop your existing PDF resume below to get started. Our smart AI will instantly analyze your experience and prepare it for precise, ATS-friendly tailoring.
         </CardDescription>
       </CardHeader>
       <CardContent>
