@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
+import { motion } from "framer-motion";
+
 export function Step2JDInput() {
   const { jobDescription, setJobDescription, setStep } = useWizardStore();
   const [validationError, setValidationError] = useState("");
@@ -41,15 +43,25 @@ export function Step2JDInput() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Textarea
-          placeholder="Paste Job Description here…"
-          className="min-h-[250px] resize-y font-serif text-sm leading-relaxed"
+        <motion.div
+          whileFocus="focus"
+          initial="idle"
+          variants={{
+            idle: { scale: 1 },
+            focus: { scale: 1.01 }
+          }}
+          transition={{ duration: 0.2 }}
+        >
+          <Textarea
+            placeholder="Paste Job Description here…"
+            className="min-h-[250px] resize-y font-serif text-sm leading-relaxed transition-colors focus-visible:ring-primary/40 focus-visible:border-primary/60"
           value={jobDescription}
           onChange={(e) => {
             setJobDescription(e.target.value);
             if (validationError) setValidationError("");
           }}
         />
+        </motion.div>
         {validationError && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />

@@ -17,8 +17,9 @@ import {
   Download,
   Loader2,
   AlertCircle,
+  FileCheck,
 } from "lucide-react";
-import { applyTextReplacementsToPdf } from "@/lib/pdf-modify";
+import { motion } from "framer-motion";
 
 export function Step4Export() {
   const { acceptedSuggestions, originalFileName, originalPdfBytes, reset } =
@@ -36,7 +37,7 @@ export function Step4Export() {
     setError("");
 
     try {
-      // Create the tailored filename
+      // Create tailored filename
       let tailoredFileName = "Tailored_Resume.pdf";
       if (originalFileName) {
         const baseName = originalFileName.toLowerCase().endsWith(".pdf")
@@ -45,27 +46,39 @@ export function Step4Export() {
         tailoredFileName = `${baseName}_tailored.pdf`;
       }
 
-      if (acceptedSuggestions.length === 0) {
-        // No changes accepted — just download the original
-        downloadBlob(originalPdfBytes, tailoredFileName);
-        return;
+      // Prepare payload
+      const formData = new FormData();
+      const safeBuffer = new Uint8Array(originalPdfBytes).buffer;
+      const fileBlob = new Blob([safeBuffer], { type: "application/pdf" });
+      formData.append("file", fileBlob, "original.pdf");
+      formData.append("replacements", JSON.stringify(acceptedSuggestions));
+
+      // 1. Send the file and replacements to our PyMuPDF backend route
+      const response = await fetch("/api/export-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || "PDF Generation Engine failed.");
       }
 
-      const modifiedPdfBytes = await applyTextReplacementsToPdf(
-        originalPdfBytes,
-        acceptedSuggestions
-      );
-
-      downloadBlob(modifiedPdfBytes, tailoredFileName);
+      // 2. Download the returned PDF blob (which preserves layout exactly)
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = tailoredFileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Error modifying PDF:", err);
+      console.error("Error generating PDF:", err);
       setError(
-        "Failed to modify the PDF. Downloading the original instead — you can apply the changes manually."
+        err instanceof Error ? err.message : "Failed to format the PDF.",
       );
-      // Fallback: download original
-      if (originalPdfBytes) {
-        downloadBlob(originalPdfBytes, "Original_Resume.pdf");
-      }
     } finally {
       setIsGenerating(false);
     }
@@ -83,33 +96,65 @@ export function Step4Export() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center p-12 min-h-[300px]">
-        <div className="bg-primary/10 rounded-full p-6 mb-6">
-          <CheckCircle2 className="w-16 h-16 text-primary" />
-        </div>
-        <h3 className="text-2xl font-bold mb-2">Changes Applied</h3>
-        <p className="text-muted-foreground font-serif mb-8 text-center max-w-md">
-          Your resume has been tailored with the accepted suggestions. The
-          original layout, fonts, and styling are fully preserved.
-        </p>
-
-        <Button
-          size="lg"
-          onClick={handleDownload}
-          disabled={isGenerating}
-          className="gap-2"
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+          className="bg-primary/10 rounded-full p-6 mb-6 relative"
         >
-          {isGenerating ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Generating PDF…
-            </>
-          ) : (
-            <>
-              <Download className="h-4 w-4" />
-              Download Tailored Resume
-            </>
-          )}
-        </Button>
+          <CheckCircle2 className="w-16 h-16 text-primary" />
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="absolute -bottom-2 -right-2"
+          >
+            <FileCheck className="w-6 h-6 text-primary" />
+          </motion.div>
+        </motion.div>
+        <motion.h3 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="text-2xl font-bold mb-2"
+        >
+          Changes Applied
+        </motion.h3>
+        <motion.p 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="text-muted-foreground font-serif mb-8 text-center max-w-md"
+        >
+          We used an advanced backend rendering engine to perfectly locate,
+          redact, and replace the text in your original PDF. Your layout,
+          design, and style remain exactly as you uploaded them.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Button
+            size="lg"
+            onClick={handleDownload}
+            disabled={isGenerating}
+            className="gap-2 px-8 transition-transform hover:scale-105 active:scale-95"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Rendering Document…
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download Tailored PDF
+              </>
+            )}
+          </Button>
+        </motion.div>
 
         {error && (
           <Alert variant="destructive" className="mt-6 max-w-md">
@@ -126,20 +171,4 @@ export function Step4Export() {
       </CardFooter>
     </>
   );
-}
-
-function downloadBlob(data: Uint8Array | ArrayBuffer, filename: string) {
-  // Create a clean ArrayBuffer copy to satisfy strict BlobPart typing
-  const bytes = data instanceof Uint8Array ? data : new Uint8Array(data);
-  const cleanBuffer = new ArrayBuffer(bytes.length);
-  new Uint8Array(cleanBuffer).set(bytes);
-  const blob = new Blob([cleanBuffer], { type: "application/pdf" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
 }

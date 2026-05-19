@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import ReactDiffViewer from "react-diff-viewer-continued";
 import { AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Step3Review() {
   const {
@@ -28,9 +29,9 @@ export function Step3Review() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Local state to track which suggestions are accepted/rejected
+  // Local state to track which suggestions are accepted
   const [decisions, setDecisions] = useState<
-    Record<number, "accept" | "reject">
+    Record<number, "accept">
   >({});
 
   useEffect(() => {
@@ -61,12 +62,8 @@ export function Step3Review() {
 
       setAiSuggestions(data.changes || []);
 
-      // Default auto-accept all suggestions for UX simplicity
-      const initialDecisions: Record<number, "accept"> = {};
-      (data.changes || []).forEach((_: unknown, idx: number) => {
-        initialDecisions[idx] = "accept";
-      });
-      setDecisions(initialDecisions);
+      // Start with all decisions pending (empty object) so the user must actively accept or reject
+      setDecisions({});
     } catch (err) {
       console.error(err);
       setError(
@@ -77,8 +74,16 @@ export function Step3Review() {
     }
   };
 
-  const handleDecision = (idx: number, status: "accept" | "reject") => {
-    setDecisions((prev) => ({ ...prev, [idx]: status }));
+  const toggleDecision = (idx: number) => {
+    setDecisions((prev) => {
+      const newDecisions = { ...prev };
+      if (newDecisions[idx] === "accept") {
+        delete newDecisions[idx]; // Undo selection
+      } else {
+        newDecisions[idx] = "accept";
+      }
+      return newDecisions;
+    });
   };
 
   const finalizeAndProceed = () => {
@@ -147,12 +152,16 @@ export function Step3Review() {
       </CardHeader>
       <CardContent className="max-h-[75vh] overflow-y-auto">
         <div className="space-y-8">
-          {aiSuggestions.map((suggestion, idx) => (
-            <div
-              key={idx}
-              className={`border rounded-lg p-4 transition-all duration-200 ${
-                decisions[idx] === "reject"
-                  ? "opacity-60 border-destructive/30 bg-destructive/5"
+          <AnimatePresence>
+            {aiSuggestions.map((suggestion, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                className={`border rounded-lg p-4 transition-colors duration-300 ${
+                decisions[idx] === "accept"
+                  ? "border-green-500/50 bg-green-500/5"
                   : "border-border bg-card"
               }`}
             >
@@ -182,24 +191,16 @@ export function Step3Review() {
 
               <div className="flex justify-end mt-4 space-x-2">
                 <Button
-                  variant={
-                    decisions[idx] === "reject" ? "destructive" : "outline"
-                  }
+                  variant={decisions[idx] === "accept" ? "destructive" : "default"}
                   size="sm"
-                  onClick={() => handleDecision(idx, "reject")}
+                  onClick={() => toggleDecision(idx)}
                 >
-                  Reject
-                </Button>
-                <Button
-                  variant={decisions[idx] === "accept" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => handleDecision(idx, "accept")}
-                >
-                  Accept
+                  {decisions[idx] === "accept" ? "Reject" : "Accept"}
                 </Button>
               </div>
-            </div>
+            </motion.div>
           ))}
+          </AnimatePresence>
           {aiSuggestions.length === 0 && !isLoading && !error && (
             <p className="text-center text-muted-foreground font-serif py-8">
               No suggestions found. Your resume might already be perfectly
@@ -212,7 +213,12 @@ export function Step3Review() {
         <Button variant="outline" onClick={() => setStep(2)}>
           Back
         </Button>
-        <Button onClick={finalizeAndProceed}>Finalize and Export</Button>
+        <Button 
+          disabled={Object.values(decisions).length === 0} 
+          onClick={finalizeAndProceed}
+        >
+          Finalize and Export
+        </Button>
       </CardFooter>
     </>
   );

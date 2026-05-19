@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UploadCloud, AlertCircle } from "lucide-react";
+import { motion } from "framer-motion";
 
 export function Step1ResumeUpload() {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -94,7 +95,9 @@ export function Step1ResumeUpload() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div
+        <motion.div
+          whileHover={{ scale: isDragActive ? 1 : 1.01 }}
+          whileTap={{ scale: 0.99 }}
           onDragOver={(e) => {
             e.preventDefault();
             setIsDragActive(true);
@@ -103,13 +106,17 @@ export function Step1ResumeUpload() {
           onDrop={onDrop}
           className={`
             flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-lg
-            transition-all duration-300 cursor-pointer
+            transition-colors duration-300 cursor-pointer
             ${
               isDragActive
-                ? "border-primary bg-primary/10 scale-[1.01]"
-                : "border-border hover:border-primary/50 hover:bg-accent/30"
+                ? "border-primary bg-primary/10 shadow-inner"
+                : "border-border/60 hover:border-primary/50 hover:bg-card/50"
             }
           `}
+          onClick={() => {
+            const fileInput = document.getElementById("pdf-upload") as HTMLInputElement;
+            if (fileInput && !isProcessing) fileInput.click();
+          }}
         >
           <UploadCloud
             className={`w-14 h-14 mb-5 transition-colors duration-300 ${
@@ -132,9 +139,8 @@ export function Step1ResumeUpload() {
           />
           <Button
             variant="secondary"
-            className="cursor-pointer"
+            className="cursor-pointer pointer-events-none"
             disabled={isProcessing}
-            onClick={() => document.getElementById("pdf-upload")?.click()}
           >
             {isProcessing ? (
               <span className="flex items-center gap-2">
@@ -145,7 +151,7 @@ export function Step1ResumeUpload() {
               "Browse PDF"
             )}
           </Button>
-        </div>
+        </motion.div>
 
         {error && (
           <Alert variant="destructive" className="mt-4">

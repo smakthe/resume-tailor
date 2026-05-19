@@ -9,6 +9,7 @@ import { Step2JDInput } from "./Step2JDInput";
 import { Step3Review } from "./Step3Review";
 import { Step4Export } from "./Step4Export";
 import { FileUp, FileText, ScanSearch, Download } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const steps = [
   { label: "Upload", icon: FileUp },
@@ -22,20 +23,32 @@ export function WizardContainer() {
   const progressValue = ((currentStep - 1) / (steps.length - 1)) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8 bg-gradient-to-b from-background to-card relative overflow-hidden">
+      {/* Decorative vintage noise overlay via global css continues to apply */}
+      
       {/* Header */}
-      <div className="w-full max-w-4xl mb-10 flex flex-col items-center justify-center text-center">
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-3 text-foreground">
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="w-full max-w-4xl mb-10 flex flex-col items-center justify-center text-center relative z-10"
+      >
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-foreground font-serif drop-shadow-sm">
           AI-Powered Resume Tailor
         </h1>
-        <p className="text-muted-foreground text-base md:text-lg font-serif max-w-2xl">
+        <p className="text-muted-foreground text-base md:text-lg max-w-2xl font-serif italic">
           Format your resume cleanly to pass ATS scanning based on the exact
           Job Description.
         </p>
-      </div>
+      </motion.div>
 
       {/* Step Indicator */}
-      <div className="w-full max-w-4xl mb-8">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="w-full max-w-4xl mb-8 relative z-10"
+      >
         <div className="flex items-center justify-between mb-3">
           {steps.map((step, idx) => {
             const stepNum = idx + 1;
@@ -75,25 +88,46 @@ export function WizardContainer() {
           })}
         </div>
         <Progress value={progressValue} className="h-1.5" />
-      </div>
+      </motion.div>
 
       {/* Wizard Card */}
-      <Card className="w-full max-w-4xl shadow-lg border border-border/80 min-h-[500px] animate-fade-slide-in">
-        <div key={currentStep} className="animate-fade-slide-in">
-          {currentStep === 1 && <Step1ResumeUpload />}
-          {currentStep === 2 && <Step2JDInput />}
-          {currentStep === 3 && <Step3Review />}
-          {currentStep === 4 && <Step4Export />}
-        </div>
-      </Card>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="w-full max-w-4xl relative z-10"
+      >
+        <Card className="w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-border/60 min-h-[500px] overflow-hidden backdrop-blur-sm bg-card/95">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="h-full"
+            >
+              {currentStep === 1 && <Step1ResumeUpload />}
+              {currentStep === 2 && <Step2JDInput />}
+              {currentStep === 3 && <Step3Review />}
+              {currentStep === 4 && <Step4Export />}
+            </motion.div>
+          </AnimatePresence>
+        </Card>
+      </motion.div>
 
       {/* Footer */}
-      <p className="mt-8 text-muted-foreground text-sm flex items-center gap-2 font-serif italic">
+      <motion.p 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.8 }}
+        className="mt-10 text-muted-foreground text-sm flex items-center gap-2 font-serif italic relative z-10"
+      >
         Powered by{" "}
         <span className="font-semibold not-italic text-primary">
           Llama 3.3 via Groq
         </span>
-      </p>
+      </motion.p>
     </div>
   );
 }
