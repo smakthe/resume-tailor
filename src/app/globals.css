@@ -179,3 +179,17 @@
 .animate-fade-slide-in {
   animation: fadeSlideIn 0.4s ease-out;
 }
+
+/* ── Diff Viewer Word Wrap Override ────────── */
+.diff-viewer-wrapper table {
+  table-layout: fixed !important;
+  width: 100% !important;
+}
+
+.diff-viewer-wrapper td,
+.diff-viewer-wrapper pre,
+.diff-viewer-wrapper span {
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+}

@@ -174,7 +174,7 @@ export function Step3Review() {
                 </p>
               </div>
               {/* Diff Viewer */}
-              <div className="border border-border/60 rounded-md overflow-hidden bg-card/50">
+              <div className="diff-viewer-wrapper border border-border/60 rounded-md overflow-hidden bg-card/50">
                 <ReactDiffViewer
                   oldValue={suggestion.original}
                   newValue={suggestion.suggested}
