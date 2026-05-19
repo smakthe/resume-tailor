@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useWizardStore } from "@/store/useWizardStore";
 import {
   CardHeader,
@@ -18,16 +17,39 @@ import { motion } from "framer-motion";
 
 export function Step2JDInput() {
   const { jobDescription, setJobDescription, setStep } = useWizardStore();
-  const [validationError, setValidationError] = useState("");
+
+  const getJDValidation = (text: string) => {
+    const trimmed = text.trim();
+    if (trimmed.length === 0) return { isValid: false, message: "" };
+    if (trimmed.length < 100)
+      return { isValid: false, message: "Too short to be a complete job description." };
+
+    const keywords = [
+      "experience", "requirements", "skills", "responsibilities", "role",
+      "qualifications", "team", "years", "degree", "bachelor",
+      "opportunity", "company", "salary", "bonus", "equity", "benefits",
+      "required", "preferred", "looking for", "about us", "description",
+      "must have", "nice to have", "what you'll do", "equal opportunity"
+    ];
+
+    const lowerText = trimmed.toLowerCase();
+    const matchCount = keywords.filter((kw) => lowerText.includes(kw)).length;
+
+    if (matchCount < 3) {
+      return {
+        isValid: false,
+        message: "This does not appear to be a valid job description.",
+      };
+    }
+
+    return { isValid: true, message: "" };
+  };
+
+  const validation = getJDValidation(jobDescription);
 
   const handleNext = () => {
-    if (jobDescription.trim().length > 20) {
-      setValidationError("");
+    if (validation.isValid) {
       setStep(3);
-    } else {
-      setValidationError(
-        "Please paste a comprehensive Job Description (at least a few sentences)."
-      );
     }
   };
 
@@ -54,18 +76,19 @@ export function Step2JDInput() {
         >
           <Textarea
             placeholder="Paste Job Description here…"
-            className="min-h-[250px] resize-y font-serif text-sm leading-relaxed transition-colors focus-visible:ring-primary/40 focus-visible:border-primary/60"
-          value={jobDescription}
-          onChange={(e) => {
-            setJobDescription(e.target.value);
-            if (validationError) setValidationError("");
-          }}
-        />
+            className={`min-h-[250px] resize-y font-serif text-sm leading-relaxed transition-colors focus-visible:ring-primary/40 focus-visible:border-primary/60 ${
+              !validation.isValid && jobDescription.trim().length > 0
+                ? "border-destructive focus-visible:ring-destructive/40 focus-visible:border-destructive"
+                : ""
+            }`}
+            value={jobDescription}
+            onChange={(e) => setJobDescription(e.target.value)}
+          />
         </motion.div>
-        {validationError && (
-          <Alert variant="destructive" className="mt-4">
+        {!validation.isValid && validation.message && (
+          <Alert variant="destructive" className="mt-4 animate-in fade-in zoom-in duration-300">
             <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{validationError}</AlertDescription>
+            <AlertDescription>{validation.message}</AlertDescription>
           </Alert>
         )}
       </CardContent>
@@ -73,7 +96,9 @@ export function Step2JDInput() {
         <Button variant="outline" onClick={() => setStep(1)}>
           Back
         </Button>
-        <Button onClick={handleNext}>Tailor Resume</Button>
+        <Button disabled={!validation.isValid} onClick={handleNext}>
+          Tailor Resume
+        </Button>
       </CardFooter>
     </>
   );

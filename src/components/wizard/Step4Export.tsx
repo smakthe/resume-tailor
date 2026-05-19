@@ -46,17 +46,29 @@ export function Step4Export() {
         tailoredFileName = `${baseName}_tailored.pdf`;
       }
 
-      // Prepare payload
-      const formData = new FormData();
-      const safeBuffer = new Uint8Array(originalPdfBytes).buffer;
-      const fileBlob = new Blob([safeBuffer], { type: "application/pdf" });
-      formData.append("file", fileBlob, "original.pdf");
-      formData.append("replacements", JSON.stringify(acceptedSuggestions));
+      // Prepare JSON payload
+      // Convert Uint8Array to Base64 safely
+      const uint8ArrayToBase64 = (bytes: Uint8Array) => {
+        let binary = "";
+        const len = bytes.byteLength;
+        for (let i = 0; i < len; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        return window.btoa(binary);
+      };
+      
+      const pdfBase64 = uint8ArrayToBase64(originalPdfBytes);
 
-      // 1. Send the file and replacements to our PyMuPDF backend route
+      // 1. Send the file and replacements to our native Vercel Python endpoint
       const response = await fetch("/api/export-pdf", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          pdfBase64,
+          replacements: acceptedSuggestions
+        }),
       });
 
       if (!response.ok) {
