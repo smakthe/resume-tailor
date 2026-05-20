@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import ReactDiffViewer from "react-diff-viewer-continued";
+
 import { AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -173,50 +173,22 @@ export function Step3Review() {
                   {suggestion.reason}
                 </p>
               </div>
-              {/* Diff Viewer */}
-              <div className="diff-viewer-wrapper w-full min-w-0 max-w-full border border-border/60 rounded-md overflow-hidden bg-card/50">
-                <ReactDiffViewer
-                  oldValue={suggestion.original}
-                  newValue={suggestion.suggested}
-                  splitView={false}
-                  hideLineNumbers={true}
-                  styles={{
-                    variables: {
-                      light: {
-                        diffViewerBackground: "transparent",
-                        diffViewerColor: "inherit",
-                        addedBackground: "rgba(34, 197, 94, 0.15)",
-                        addedColor: "inherit",
-                        removedBackground: "rgba(239, 68, 68, 0.15)",
-                        removedColor: "inherit",
-                        wordAddedBackground: "rgba(34, 197, 94, 0.3)",
-                        wordRemovedBackground: "rgba(239, 68, 68, 0.3)",
-                      }
-                    },
-                    diffContainer: {
-                      tableLayout: "fixed",
-                      width: "100%",
-                    },
-                    content: {
-                      width: "100%",
-                      overflow: "hidden",
-                    },
-                    contentText: {
-                      wordBreak: "break-word",
-                      overflowWrap: "break-word",
-                      whiteSpace: "pre-wrap",
-                      fontFamily: "inherit",
-                      fontSize: "0.875rem",
-                      lineHeight: "1.5",
-                      padding: "8px",
-                      width: "100%",
-                    },
-                    marker: {
-                      width: "25px",
-                      minWidth: "25px",
-                    }
-                  }}
-                />
+              {/* Native Custom Diff Viewer */}
+              <div className="w-full flex flex-col border border-border/60 rounded-md overflow-hidden bg-card/50 text-sm font-serif leading-relaxed">
+                {/* Deletions (Red) */}
+                <div className="flex w-full bg-red-500/15 text-foreground/90 p-3 items-start border-b border-border/30">
+                  <span className="select-none text-red-600/70 font-bold mr-4 w-4 shrink-0 text-center">-</span>
+                  <div className="w-full break-words whitespace-pre-wrap">
+                    {suggestion.original}
+                  </div>
+                </div>
+                {/* Additions (Green) */}
+                <div className="flex w-full bg-green-500/15 text-foreground p-3 items-start">
+                  <span className="select-none text-green-600/70 font-bold mr-4 w-4 shrink-0 text-center">+</span>
+                  <div className="w-full break-words whitespace-pre-wrap">
+                    {suggestion.suggested}
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-end mt-4 space-x-2">
